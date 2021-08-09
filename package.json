@@ -10,5 +10,20 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.10.10"
-  }
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ruby-Gracia/boilerPlate.git"
+  },
+  "keywords": [],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/Ruby-Gracia/boilerPlate/issues"
+  },
+  "homepage": "https://github.com/Ruby-Gracia/boilerPlate#readme",
+  "description": ""
 }
