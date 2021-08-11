@@ -7,6 +7,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const session = require("express-session");
 
+const MongoStore = require("connect-mongo");
+
 if (!config.get("jwtPrivateKey")) {
   console.error("FATAL ERROR : jwtPrivateKey is not defined");
   process.exit(1);
@@ -16,6 +18,7 @@ mongoose.connect("mongodb://localhost:27017/boilerplate", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true,
+  useFindAndModify: false,
 });
 
 mongoose.connection.on("error", (err) => {
@@ -28,14 +31,30 @@ mongoose.connection.once("open", () => {
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(
   session({
-    secret: "Key that willsign cookie",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 60000 },
+    secret: "some key",
+    resave: true,
+    saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: "mongodb://localhost:27017/boilerplate",
+    }),
+    cookie: { maxAge: 1000 * 60 * 60 * 24 }, //equals 1 day
   })
 );
+
+app.get("/", (req, res) => {
+  console.log(req.session);
+
+  if (req.session.viewCount) {
+    req.session.viewCount = req.session.viewCount + 1;
+  } else {
+    req.session.viewCount = 1;
+  }
+  res.send(`visited page ${req.session.viewCount} time(s)`);
+});
 
 app.post("/api/change-password", async (req, res) => {
   const { token, newpassword: plainTextPassword } = req.body;
@@ -139,6 +158,15 @@ app.post("/api/register", async (req, res) => {
 
   res.json({ status: "ok" });
 });
+
+// app.delete("/logout/:id", async (req, res) => {
+//   const user = await User.findByIdAndRemove(req.params.id);
+
+//   res.status(200).json({
+//     success: true,
+//     data: user,
+//   });
+// });
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
